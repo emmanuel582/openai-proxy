@@ -4,14 +4,15 @@ const axios = require("axios");
 const app = express();
 app.use(express.json());
 
-const GEMINI_API_KEY = "AIzaSyBgVYc5d8Ae6Hdq2n9gJLs0U_Mh7idwJEg"; // ✅ Your working Gemini key
+const GEMINI_API_KEY = "AIzaSyBgVYc5d8Ae6Hdq2n9gJLs0U_Mh7idwJEg"; // ✅ Your working Gemini API key
 
 app.post("/v1/chat/completions", async (req, res) => {
   try {
     const { messages } = req.body;
 
+    // Convert OpenAI-style messages into Gemini-compatible format
     const promptParts = messages.map(msg => ({
-      role: "user",
+      role: "user", // Gemini only accepts user role in each turn
       parts: [{ text: msg.content }]
     }));
 
@@ -21,12 +22,14 @@ app.post("/v1/chat/completions", async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "X-goog-api-key": GEMINI_API_KEY // ✅ FIXED: correct header for Gemini
+          "X-goog-api-key": GEMINI_API_KEY
         }
       }
     );
 
-    const content = geminiResponse.data.candidates?.[0]?.content?.parts?.[0]?.text || "[No reply]";
+    // Extract assistant's full reply
+    const parts = geminiResponse.data.candidates?.[0]?.content?.parts;
+    const content = parts?.map(p => p.text).join("\n") || "[No reply]";
 
     res.json({
       id: "chatcmpl-gemini",

@@ -4,14 +4,14 @@ const axios = require("axios");
 const app = express();
 app.use(express.json());
 
-const GEMINI_API_KEY = "AIzaSyBgVYc5d8Ae6Hdq2n9gJLs0U_Mh7idwJEg"; // Your actual Gemini key
+const GEMINI_API_KEY = "AIzaSyBgVYc5d8Ae6Hdq2n9gJLs0U_Mh7idwJEg"; // ✅ Your working Gemini key
 
 app.post("/v1/chat/completions", async (req, res) => {
   try {
     const { messages } = req.body;
 
     const promptParts = messages.map(msg => ({
-      role: msg.role,
+      role: "user",
       parts: [{ text: msg.content }]
     }));
 
@@ -21,7 +21,7 @@ app.post("/v1/chat/completions", async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${GEMINI_API_KEY}`
+          "X-goog-api-key": GEMINI_API_KEY // ✅ FIXED: correct header for Gemini
         }
       }
     );
@@ -46,11 +46,14 @@ app.post("/v1/chat/completions", async (req, res) => {
     });
   } catch (error) {
     console.error("Gemini error:", error.response?.data || error.message);
-    res.status(500).json({ error: "Gemini request failed", details: error.response?.data || error.message });
+    res.status(500).json({
+      error: "Gemini request failed",
+      details: error.response?.data || error.message
+    });
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Gemini proxy running on https://your-render-url/v1/chat/completions`);
 });

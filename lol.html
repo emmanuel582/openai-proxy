@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jarvis Voice Assistant</title>
+  <style>
+    body {
+      background-color: #0a0f1a;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #jarvis-response {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #1a1f2b;
+      border-radius: 8px;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #2962ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎙️ Talk to Jarvis</h1>
+  <button id="micBtn">Start Speaking</button>
+
+  <div id="jarvis-response">Jarvis will respond here...</div>
+
+  <script>
+    const button = document.getElementById('micBtn');
+    const responseDiv = document.getElementById('jarvis-response');
+
+    let recognition;
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+    } else {
+      alert("Your browser doesn't support Web Speech API. Try Chrome.");
+    }
+
+    button.onclick = () => {
+      if (!recognition) return;
+
+      button.disabled = true;
+      button.textContent = "Listening...";
+
+      recognition.start();
+
+      recognition.onresult = async (event) => {
+        const transcript = event.results[0][0].transcript;
+        responseDiv.innerHTML = `🗣️ You said: "${transcript}"<br>⏳ Asking Jarvis...`;
+
+        // Send to n8n webhook
+        try {
+          const res = await fetch('https://dephenominal.app.n8n.cloud/webhook-test/n8n', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: transcript })
+          });
+
+          const data = await res.json();
+
+          responseDiv.innerHTML = `🤖 Jarvis: ${data.reply || 'No response from n8n.'}`;
+        } catch (err) {
+          console.error(err);
+          responseDiv.innerHTML = "❌ Error contacting Jarvis.";
+        }
+
+        button.disabled = false;
+        button.textContent = "Start Speaking";
+      };
+
+      recognition.onerror = (err) => {
+        console.error('Speech recognition error:', err);
+        responseDiv.innerHTML = "❌ Speech recognition failed.";
+        button.disabled = false;
+        button.textContent = "Start Speaking";
+      };
+    };
+  </script>
+</body>
+</html>

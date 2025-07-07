@@ -4,7 +4,7 @@ const axios = require("axios");
 const app = express();
 app.use(express.json());
 
-const GEMINI_API_KEY = "AIzaSyBgVYc5d8Ae6Hdq2n9gJLs0U_Mh7idwJEg"; // ✅ Your working Gemini API key
+const GEMINI_API_KEY = "AIzaSyCtG58em6V7ptRJqhRSnLbzMRXbgv5DFl4"; // ✅ Your working Gemini API key
 
 app.post("/v1/chat/completions", async (req, res) => {
   try {

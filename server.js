@@ -6,7 +6,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const N8N_WEBHOOK_URL = "https://dephenominal.app.n8n.cloud/webhook-test/n8n"; // your webhook
+const N8N_WEBHOOK_URL = "https://dephenominal.app.n8n.cloud/webhook/n8n";
+
 
 app.post("/v1/chat/completions", async (req, res) => {
   try {
